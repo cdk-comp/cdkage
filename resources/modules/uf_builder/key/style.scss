@@ -1,0 +1,5 @@
+.module-key {
+  background: red;
+  color: white;
+  @include scut-padding(scut-em(15));
+}

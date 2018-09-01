@@ -1,0 +1,5 @@
+.module-api {
+  background: blue;
+  color: white;
+  @include scut-padding(scut-em(15));
+}

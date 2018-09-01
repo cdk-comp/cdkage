@@ -1,0 +1,49 @@
+a {
+  text-decoration: none;
+  color: $accent;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+b,
+strong {
+  font-weight: 800;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-bottom: scut-rem(10);
+}
+
+h1 {
+  font-size: scut-em(40);
+}
+
+h2 {
+  font-size: scut-em(32);
+}
+
+h3 {
+  font-size: scut-em(26);
+}
+
+h4 {
+  font-size: scut-em(22);
+}
+
+h5,
+h6 {
+  font-size: scut-em(18);
+}
+
+blockquote {
+  padding-left: scut-em(16);
+  margin: scut-rem(16 0);
+  border-left: 3px solid rgba($dark, 0.2);
+}

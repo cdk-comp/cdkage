@@ -1,0 +1,53 @@
+html {
+  box-sizing: border-box;
+  font-size: 100%;
+  overflow-x: hidden;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+  font-weight: normal;
+}
+
+body {
+  min-height: 100vh;
+  min-width: scut-em(320);
+  overflow-x: hidden;
+  font-family: $font-r;
+  font-size: 100%;
+  color: $text-main;
+
+  &.admin-bar {
+    .wrapper {
+      margin-top: 0;
+    }
+
+    .header {
+      top: 32px;
+    }
+  }
+}
+
+.container {
+  margin: 0 auto;
+  max-width: scut-rem(1170);
+  padding: 0 scut-rem(15);
+}
+
+img {
+  max-width: 100%;
+}
+
+a,
+input[type=submit],
+button,
+path,
+polygon,
+circle,
+rect {
+  outline: none;
+  transition: all $hover-time ease-in;
+}
+

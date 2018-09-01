@@ -1,0 +1,30 @@
+/**
+ * Import npm dependencies
+ *
+ * Prefix your imports with `~` to grab from node_modules/
+ * @see https://github.com/webpack-contrib/sass-loader#imports
+ */
+@import "~scut/dist/scut";
+@import "~normalize-scss/sass/_normalize";
+@include normalize();
+@include scut-reset();
+
+/** Import theme styles */
+
+//Common
+@import "common/mixins";
+@import "common/fonts";
+@import "common/variables";
+@import "common/global";
+@import "common/wp-classes";
+@import "common/typography";
+
+//Layouts
+@import "layouts/footer";
+@import "layouts/header";
+
+//Components
+@import "components/*.scss";
+
+//Modules
+@import "../../modules/**/*.scss";
