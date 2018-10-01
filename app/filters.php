@@ -101,3 +101,14 @@ add_filter('sage/template/app/data', function ($data) {
         'sf_submit_text' => esc_attr_x('Search', 'submit button', 'sage'),
     ];
 });
+
+/**
+ * Hide the Advanced Custom Fields menu
+ */
+add_filter('acf/settings/show_admin', '__return_false');
+
+
+/**
+ * Hide the Ultimate Fields menu
+ */
+define('ULTIMATE_FIELDS_DISABLE_UI', true);

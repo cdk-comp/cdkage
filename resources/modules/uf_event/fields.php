@@ -13,9 +13,7 @@ use Ultimate_Fields\Field;
 /**
  * Register the needed fields for events.
  */
-add_action('uf.init', 'cdkage_add_event_fields');
-function cdkage_add_event_fields()
-{
+add_action('uf.init', function () {
     Container::create(__('Event Details', 'sage'))
         ->add_location('post_type', 'page')
         ->set_layout('grid')
@@ -23,4 +21,4 @@ function cdkage_add_event_fields()
             Field::create('text', 'event_start', __('Start date', 'sage')),
             Field::create('text', 'event_end', __('End date', 'sage'))
         ));
-}
+});
