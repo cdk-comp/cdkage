@@ -27,7 +27,7 @@ if (version_compare('7.1', phpversion(), '>=')) {
     $sage_error(__('You must be using PHP 7.1 or greater.', 'sage'), __('Invalid PHP version', 'sage'));
 }
 
-if (! function_exists('ultimate_fields') && !is_admin()) {
+if (!empty($GLOBALS['pagenow']) && $GLOBALS['pagenow'] != 'wp-login.php' && !function_exists('ultimate_fields') && !is_admin()) {
     $sage_error(
         __('CDKage theme is built to Ultimate Fields as a plugin, making the plugin a dependency of the theme.', 'sage')
     );
