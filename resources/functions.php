@@ -27,9 +27,16 @@ if (version_compare('7.1', phpversion(), '>=')) {
     $sage_error(__('You must be using PHP 7.1 or greater.', 'sage'), __('Invalid PHP version', 'sage'));
 }
 
-if (!empty($GLOBALS['pagenow']) && $GLOBALS['pagenow'] != 'wp-login.php' && !function_exists('ultimate_fields') && !is_admin()) {
+/**
+ * Check if required plugin exist
+ */
+$allow_login = !empty($GLOBALS['pagenow']) && $GLOBALS['pagenow'] != 'wp-login.php';
+$check_uf = !function_exists('ultimate_fields');
+$check_acf = !class_exists('acf');
+if ($allow_login && ($check_uf && $check_acf) && !is_admin()) {
     $sage_error(
-        __('CDKage theme is built to Ultimate Fields as a plugin, making the plugin a dependency of the theme.', 'sage')
+        __('Making the plugin a dependency of the theme.', 'sage') . '&nbsp;' .
+        __('CDKage theme is built to Advance Custom Fields/Ultimate Fields as a plugin.', 'sage')
     );
 }
 
@@ -64,7 +71,7 @@ array_map(function ($file) use ($sage_error) {
     if (!locate_template($file, true, true)) {
         $sage_error(sprintf(__('Error locating <code>%s</code> for inclusion.', 'sage'), $file), 'File not found');
     }
-}, ['helpers', 'setup', 'filters', 'admin', 'uf-check', 'uf-init', 'uf-modules']);
+}, ['helpers', 'setup', 'filters', 'admin', 'wcf-check', 'wcf-init', 'wcf-modules']);
 
 /**
  * Here's what's happening with these hooks:

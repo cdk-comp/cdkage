@@ -12,9 +12,7 @@ use Ultimate_Fields\Field;
 /**
  * Add the necessary fields for the builder.
  */
-add_action('uf.init', 'cdkage_add_builder_fields');
-function cdkage_add_builder_fields()
-{
+add_action('uf.init', function () {
     // Preparation
     $uf_modules = Field::create('repeater', 'uf_modules');
     Container::create('builder')
@@ -32,4 +30,4 @@ function cdkage_add_builder_fields()
             require_once($module_fields);
         }
     }
-}
+});

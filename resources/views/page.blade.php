@@ -5,8 +5,8 @@
     @include('partials.page-header')
     @include('partials.content-page')
     {{--include all modules partial view--}}
-    @foreach (glob(get_theme_file_path() . '/resources/modules/**/*.blade.php') as $file)
-      @include(basename(str_replace('partial.blade.php', '', $file)) . '.partial')
+    @foreach (App\ModuleLoader::getInstance()->getModules() as $file)
+      @include($file)
     @endforeach
   @endwhile
 @endsection

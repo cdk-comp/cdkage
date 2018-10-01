@@ -1,15 +1,18 @@
 <?php
 
+namespace App;
+
 use Ultimate_Fields\Container;
 use Ultimate_Fields\Field;
+use StoutLogic\AcfBuilder\FieldsBuilder;
 
 /**
  * Loads modules for the theme.
  *
- * This is just a helper class, if you are here to see how Ultimate Fields
+ * This is just a helper class, if you are here to see how Ultimate Fields/Advanced Custom Fields
  * works, don't focus on it. If you want to build a cdkage module, read it.
  */
-class Module_Loader
+class ModuleLoader
 {
     /**
      * Holds the definition of every module that is loaded.
@@ -28,16 +31,15 @@ class Module_Loader
     /**
      * Creates and returns an instance of the loader.
      *
-     * @return Module_Loader
+     * @return ModuleLoader
      */
-    public static function get_instance()
+    public static function getInstance()
     {
         static $instance;
 
         if (is_null($instance)) {
             $instance = new self;
         }
-
         return $instance;
     }
 
@@ -47,7 +49,7 @@ class Module_Loader
     private function __construct()
     {
         // If the plugin is not loaded, there is nothing else to load
-        if (!function_exists('ultimate_fields')) {
+        if (!class_exists('acf') && !function_exists('ultimate_fields')) {
             return;
         }
 
@@ -56,24 +58,24 @@ class Module_Loader
          *
          * @since 3.0
          *
-         * @param Module_Loader $loader The loader to add modules to.
+         * @param ModuleLoader $loader The loader to add modules to.
          */
         do_action('cdkage.load_modules', $this);
 
         // Load enabled modules
-        $option = get_option('cdkage_modules');
+        $option = function_exists('get_field') ? get_field('cdkage_modules', 'option') : get_option('cdkage_modules');
         if ($option && is_array($option)) {
             foreach ($option as $id) {
-                if (!isset($this->modules[$id])) {
+                $path = $this->modules[$id]['path'];
+                if (!isset($this->modules[$id]) || !file_exists($path . 'fields.php')) {
                     continue;
                 }
-
-                require_once $this->modules[$id]['path'] . 'fields.php';
+                require_once $path . 'fields.php';
             }
         }
 
         // Add hooks
-        add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts_and_styles'), 11);
+        add_action('wp_enqueue_scripts', array($this, 'enqueueScriptsAndStyles'), 11);
     }
 
     /**
@@ -85,16 +87,15 @@ class Module_Loader
      * @param array $module {
      *     Arguments for the module.
      *
-     * @param bool $pro Whether the module requires Ultimate Fields Pro
+     * @param bool $pro Whether the module requires Advanced Custom Fields Pro/Ultimate Fields Pro
      * @param string $path The path to the module.
      * @param string $url The URL of the module.
      * }
-     * @return Module_Loader The loader
+     * @return ModuleLoader The loader
      */
-    public function add_module($id, $module)
+    public function addModule($id, $module)
     {
-        if (
-            !isset($module['title'])
+        if (!isset($module['title'])
             || !isset($module['pro'])
             || !isset($module['path'])
             || !isset($module['url'])
@@ -118,7 +119,7 @@ class Module_Loader
     /**
      * Enqueue the styles and scripts for each module.
      */
-    public function enqueue_scripts_and_styles()
+    public function enqueueScriptsAndStyles()
     {
         foreach ($this->modules as $id => $module) {
             if (file_exists($module['path'] . 'module.js')) {
@@ -136,12 +137,14 @@ class Module_Loader
      *
      * @since 3.0
      *
-     * @param Ultimate_Fields\Options_Page $page The page to control modules.
+     * @param ACF/Ultimate_Fields\Options_Page $page The page to control modules.
+     * @param ACF/Ultimate_Fields\Type $wcf.
+     * @throws \StoutLogic\AcfBuilder\FieldNameCollisionException
      */
-    public function register_options_container($page)
+    public function registerOptionsContainer($page, $wcf)
     {
         $modules = array();
-        $active = get_option('cdkage_modules');
+        $active = $wcf == 'acf' ? get_field('cdkage_modules', 'option') : get_option('cdkage_modules');
 
         if (!$active) {
             $active = array();
@@ -159,24 +162,56 @@ class Module_Loader
                 );
             }
 
-            $modules[$id] = $title;
+            if (isset($data['wcf']) && $data['wcf'] == 'uf' && !function_exists('ultimate_fields')) {
+                continue;
+            } elseif (isset($data['wcf']) && $data['wcf'] == 'acf' && !class_exists('acf')) {
+                continue;
+            } else {
+                $modules[$id] = $title;
+            }
         }
 
         $description = __('Select the modules you want to have enabled as a cdkage.', 'sage');
 
         if (!empty($this->disabled)) {
-            $description .= "\n\n" . __('Some modules are ignored because they require Ultimate Fields Pro', 'sage');
+            $message = 'Some modules are ignored because they require Advanced Custom Fields Pro/Ultimate Fields Pro';
+            $description .= "\n\n" . __($message, 'sage');
         }
 
-        Container::create('CDKage Modules')
-            ->add_location('options', $page)
-            ->set_description_position('label')
-            ->add_fields(array(
-                Field::create('multiselect', 'cdkage_modules', __('Modules', 'sage'))
-                    ->set_description($description)
-                    ->set_input_type('checkbox')
-                    ->add_options($modules)
-            ));
+        if ($wcf == 'acf') {
+            $acf_modules = new FieldsBuilder('cdkage_modules');
+            $acf_modules
+                ->addMessage('cdkage_modules_description', $description, [
+                    'label' => __('Modules', 'sage'),
+                    'wrapper' => [
+                        'width' => '22%',
+                        'id' => 'major-publishing-actions',
+                    ],
+                    'esc_html' => 0,
+                    'new_lines' => 'wpautop'
+                ])
+                ->addCheckbox('cdkage_modules', [
+                    'label' => '',
+                    'layout' => 'vertical',
+                    'choices' => $modules,
+                    'wrapper' => [
+                        'width' => '78%'
+                    ]
+                ])
+                ->setLocation('options_page', '==', 'cdkage_options_page');
+
+            acf_add_local_field_group($acf_modules->build());
+        } else {
+            Container::create('CDKage Modules')
+                ->add_location('options', $page)
+                ->set_description_position('label')
+                ->add_fields(array(
+                    Field::create('multiselect', 'cdkage_modules', __('Modules', 'sage'))
+                        ->set_description($description)
+                        ->set_input_type('checkbox')
+                        ->add_options($modules)
+                ));
+        }
     }
 
     /**
@@ -184,10 +219,22 @@ class Module_Loader
      *
      * @since 3.0
      *
-     * @return stdClass[]
+     * @return array
      */
-    public function get_modules()
+    public function getModules()
     {
-        return $this->modules;
+        $partials = array();
+        $option = function_exists('get_field') ? get_field('cdkage_modules', 'option') : get_option('cdkage_modules');
+        if ($option && is_array($option)) {
+            foreach ($option as $id) {
+                $path = $this->modules[$id]['path'];
+                if (!isset($path) || !file_exists($path . 'partial.blade.php')) {
+                    continue;
+                }
+                $partials[] = basename(str_replace('partial.blade.php', '', $path)) . '.partial';
+            }
+        }
+
+        return $partials;
     }
 }

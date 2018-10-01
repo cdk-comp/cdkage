@@ -1,0 +1,7 @@
+.acf_event-row {
+  background-color: gray;
+  border: 1px solid #000;
+  color: white;
+  @include scut-margin(10em);
+  @include scut-padding(2em)
+}
