@@ -13,11 +13,6 @@ add_filter('body_class', function (array $classes) {
         }
     }
 
-    /** Add a global class to everything.
-     *  We want it to come first, so stuff its filter does can be overridden.
-     */
-    array_unshift($classes, 'app');
-
     /** Add class if sidebar is active */
     if (display_sidebar()) {
         $classes[] = 'sidebar-primary';
@@ -72,35 +67,19 @@ add_filter('comments_template', function ($comments_template) {
         $comments_template
     );
 
+    $data = collect(get_body_class())->reduce(function ($data, $class) use ($comments_template) {
+        return apply_filters("sage/template/{$class}/data", $data, $comments_template);
+    }, []);
+
     $theme_template = locate_template(["views/{$comments_template}", $comments_template]);
 
     if ($theme_template) {
-        echo template($theme_template);
+        echo template($theme_template, $data);
         return get_stylesheet_directory().'/index.php';
     }
 
     return $comments_template;
 }, 100);
-
-/**
- * Render WordPress searchform using Blade
- */
-add_filter('get_search_form', function () {
-    return template('partials.searchform');
-});
-
-/**
- * Collect data for searchform.
- */
-add_filter('sage/template/app/data', function ($data) {
-    return $data + [
-        'sf_action' => esc_url(home_url('/')),
-        'sf_screen_reader_text' => _x('Search for:', 'label', 'sage'),
-        'sf_placeholder' => esc_attr_x('Search &hellip;', 'placeholder', 'sage'),
-        'sf_current_query' => get_search_query(),
-        'sf_submit_text' => esc_attr_x('Search', 'submit button', 'sage'),
-    ];
-});
 
 /**
  * Hide the Advanced Custom Fields menu
